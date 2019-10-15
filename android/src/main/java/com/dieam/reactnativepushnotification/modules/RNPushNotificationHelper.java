@@ -140,7 +140,8 @@ public class RNPushNotificationHelper {
 
         boolean isSaved = scheduledNotificationsPersistence.contains(id);
         if (!isSaved) {
-            Log.e(LOG_TAG, "Failed to save " + id);
+            // Log.e(LOG_TAG, "Failed to save " + id);
+            Log.e(LOG_TAG, "Failed to save ");
         }
 
         sendNotificationScheduledCore(bundle);
