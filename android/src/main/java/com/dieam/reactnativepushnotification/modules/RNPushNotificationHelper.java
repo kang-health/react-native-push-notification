@@ -126,7 +126,7 @@ public class RNPushNotificationHelper {
         RNPushNotificationAttributes notificationAttributes = new RNPushNotificationAttributes(bundle);
         String id = notificationAttributes.getId();
 
-        Log.d(LOG_TAG, "Storing push notification with id " + id);
+        // Log.d(LOG_TAG, "Storing push notification with id " + id);
 
         SharedPreferences.Editor editor = scheduledNotificationsPersistence.edit();
         editor.putString(id, notificationAttributes.toJson().toString());
@@ -147,8 +147,8 @@ public class RNPushNotificationHelper {
         // notification to the user
         PendingIntent pendingIntent = toScheduleNotificationIntent(bundle);
 
-        Log.d(LOG_TAG, String.format("Setting a notification with id %s at time %s",
-                bundle.getString("id"), Long.toString(fireDate)));
+        // Log.d(LOG_TAG, String.format("Setting a notification with id %s at time %s",
+        //         bundle.getString("id"), Long.toString(fireDate)));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getAlarmManager().setExact(AlarmManager.RTC_WAKEUP, fireDate, pendingIntent);
         } else {
@@ -166,7 +166,7 @@ public class RNPushNotificationHelper {
 
             if (bundle.getString("message") == null) {
                 // this happens when a 'data' notification is received - we do not synthesize a local notification in this case
-                Log.d(LOG_TAG, "Cannot send to notification centre because there is no 'message' field in: " + bundle);
+                // Log.d(LOG_TAG, "Cannot send to notification centre because there is no 'message' field in: " + bundle);
                 return;
             }
 
@@ -387,13 +387,12 @@ public class RNPushNotificationHelper {
 
             // Sanity checks
             if (!validRepeatType) {
-                Log.w(LOG_TAG, String.format("Invalid repeatType specified as %s", repeatType));
+                // Log.w(LOG_TAG, String.format("Invalid repeatType specified as %s", repeatType));
                 return;
             }
 
             if ("time".equals(repeatType) && repeatTime <= 0) {
-                Log.w(LOG_TAG, "repeatType specified as time but no repeatTime " +
-                        "has been mentioned");
+                Log.w(LOG_TAG, "repeatType specified as time but no repeatTime has been mentioned");
                 return;
             }
 
@@ -419,8 +418,8 @@ public class RNPushNotificationHelper {
 
             // Sanity check, should never happen
             if (newFireDate != 0) {
-                Log.d(LOG_TAG, String.format("Repeating notification with id %s at time %s",
-                        bundle.getString("id"), Long.toString(newFireDate)));
+                // Log.d(LOG_TAG, String.format("Repeating notification with id %s at time %s",
+                //         bundle.getString("id"), Long.toString(newFireDate)));
                 bundle.putDouble("fireDate", newFireDate);
                 this.sendNotificationScheduled(bundle);
             }
@@ -453,7 +452,8 @@ public class RNPushNotificationHelper {
                     }
                 }
             } catch (JSONException e) {
-                Log.w(LOG_TAG, "Problem dealing with scheduled notification " + id, e);
+                // Log.w(LOG_TAG, "Problem dealing with scheduled notification " + id, e);
+                Log.w(LOG_TAG, "Problem dealing with scheduled notification ", e);
             }
         }
     }
@@ -472,7 +472,8 @@ public class RNPushNotificationHelper {
             editor.remove(notificationIDString);
             commit(editor);
         } else {
-            Log.w(LOG_TAG, "Unable to find notification " + notificationIDString);
+            // Log.w(LOG_TAG, "Unable to find notification " + notificationIDString);
+            Log.w(LOG_TAG, "Unable to find notification ");
         }
 
         // removed it from the notification center

@@ -34,12 +34,12 @@ public class RNPushNotificationBootEventReceiver extends BroadcastReceiver {
                         RNPushNotificationAttributes notificationAttributes = RNPushNotificationAttributes.fromJson(notificationAttributesJson);
 
                         if (notificationAttributes.getFireDate() < System.currentTimeMillis()) {
-                            Log.i(LOG_TAG, "RNPushNotificationBootEventReceiver: Showing notification for " +
-                                    notificationAttributes.getId());
+                            // Log.i(LOG_TAG, "RNPushNotificationBootEventReceiver: Showing notification for " +
+                            //         notificationAttributes.getId());
                             rnPushNotificationHelper.sendToNotificationCentre(notificationAttributes.toBundle());
                         } else {
-                            Log.i(LOG_TAG, "RNPushNotificationBootEventReceiver: Scheduling notification for " +
-                                    notificationAttributes.getId());
+                            // Log.i(LOG_TAG, "RNPushNotificationBootEventReceiver: Scheduling notification for " +
+                            //         notificationAttributes.getId());
                             rnPushNotificationHelper.sendNotificationScheduledCore(notificationAttributes.toBundle());
                         }
                     }
