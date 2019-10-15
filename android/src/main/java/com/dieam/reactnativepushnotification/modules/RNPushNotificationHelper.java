@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,6 +39,7 @@ import static com.dieam.reactnativepushnotification.modules.RNPushNotificationAt
 
 public class RNPushNotificationHelper {
     public static final String PREFERENCES_KEY = "rn_push_notification";
+    public static final String CUSTOM_NOTIFICATION_CATEGORY = "com.dieam.reactnativepushnotification.intent.category.NOTIFY";
     private static final long DEFAULT_VIBRATION = 300L;
     private static final String NOTIFICATION_CHANNEL_ID = "rn-push-notification-channel-id";
 
@@ -51,10 +54,34 @@ public class RNPushNotificationHelper {
         this.scheduledNotificationsPersistence = context.getSharedPreferences(RNPushNotificationHelper.PREFERENCES_KEY, Context.MODE_PRIVATE);
     }
 
-    public Class getMainActivityClass() {
+    private static String getCustomNotificationActivityClassName(Context context) {
+
+        PackageManager pm = context.getPackageManager();
+
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(CUSTOM_NOTIFICATION_CATEGORY);
+
+        List<ResolveInfo> resolveInfos = pm.queryIntentActivities(intent, 0);
+        for (ResolveInfo resolveInfo : resolveInfos) {
+            String pkgName = resolveInfo.activityInfo.applicationInfo.packageName;
+            if (pkgName.equalsIgnoreCase(context.getPackageName())) {
+                String className = resolveInfo.activityInfo.name;
+                return className;
+            }
+        }
+        return null;
+    }
+
+    private static String getLauncherClassName(Context context) {
         String packageName = context.getPackageName();
         Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-        String className = launchIntent.getComponent().getClassName();
+        return launchIntent.getComponent().getClassName();
+    }
+
+    public Class getMainActivityClass() {
+        String customIntentClassName = getCustomNotificationActivityClassName(context);
+        String launchIntentClassName = getLauncherClassName(context);
+        String className = customIntentClassName == null ? launchIntentClassName : customIntentClassName;
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
@@ -103,7 +130,7 @@ public class RNPushNotificationHelper {
         RNPushNotificationAttributes notificationAttributes = new RNPushNotificationAttributes(bundle);
         String id = notificationAttributes.getId();
 
-        Log.d(LOG_TAG, "Storing push notification with id " + id);
+        // Log.d(LOG_TAG, "Storing push notification with id " + id);
 
         SharedPreferences.Editor editor = scheduledNotificationsPersistence.edit();
         editor.putString(id, notificationAttributes.toJson().toString());
@@ -124,8 +151,8 @@ public class RNPushNotificationHelper {
         // notification to the user
         PendingIntent pendingIntent = toScheduleNotificationIntent(bundle);
 
-        Log.d(LOG_TAG, String.format("Setting a notification with id %s at time %s",
-                bundle.getString("id"), Long.toString(fireDate)));
+        // Log.d(LOG_TAG, String.format("Setting a notification with id %s at time %s",
+        //         bundle.getString("id"), Long.toString(fireDate)));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getAlarmManager().setExact(AlarmManager.RTC_WAKEUP, fireDate, pendingIntent);
         } else {
@@ -143,7 +170,7 @@ public class RNPushNotificationHelper {
 
             if (bundle.getString("message") == null) {
                 // this happens when a 'data' notification is received - we do not synthesize a local notification in this case
-                Log.d(LOG_TAG, "Cannot send to notification centre because there is no 'message' field in: " + bundle);
+                // Log.d(LOG_TAG, "Cannot send to notification centre because there is no 'message' field in: " + bundle);
                 return;
             }
 
@@ -365,13 +392,12 @@ public class RNPushNotificationHelper {
 
             // Sanity checks
             if (!validRepeatType) {
-                Log.w(LOG_TAG, String.format("Invalid repeatType specified as %s", repeatType));
+                // Log.w(LOG_TAG, String.format("Invalid repeatType specified as %s", repeatType));
                 return;
             }
 
             if ("time".equals(repeatType) && repeatTime <= 0) {
-                Log.w(LOG_TAG, "repeatType specified as time but no repeatTime " +
-                        "has been mentioned");
+                Log.w(LOG_TAG, "repeatType specified as time but no repeatTime has been mentioned");
                 return;
             }
 
@@ -417,8 +443,8 @@ public class RNPushNotificationHelper {
 
             // Sanity check, should never happen
             if (newFireDate != 0) {
-                Log.d(LOG_TAG, String.format("Repeating notification with id %s at time %s",
-                        bundle.getString("id"), Long.toString(newFireDate)));
+                // Log.d(LOG_TAG, String.format("Repeating notification with id %s at time %s",
+                //         bundle.getString("id"), Long.toString(newFireDate)));
                 bundle.putDouble("fireDate", newFireDate);
                 this.sendNotificationScheduled(bundle);
             }
@@ -458,7 +484,8 @@ public class RNPushNotificationHelper {
                     }
                 }
             } catch (JSONException e) {
-                Log.w(LOG_TAG, "Problem dealing with scheduled notification " + id, e);
+                // Log.w(LOG_TAG, "Problem dealing with scheduled notification " + id, e);
+                Log.w(LOG_TAG, "Problem dealing with scheduled notification ", e);
             }
         }
     }
@@ -477,7 +504,8 @@ public class RNPushNotificationHelper {
             editor.remove(notificationIDString);
             commit(editor);
         } else {
-            Log.w(LOG_TAG, "Unable to find notification " + notificationIDString);
+            // Log.w(LOG_TAG, "Unable to find notification " + notificationIDString);
+            Log.w(LOG_TAG, "Unable to find notification ");
         }
 
         // removed it from the notification center
